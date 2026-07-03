@@ -71,5 +71,7 @@ jobs:
           shasum -a 256 release/Roundtable-"$version"-*.dmg release/Roundtable-"$version"-*.zip > release/SHA256SUMS.txt
           gh release upload "v$version" release/SHA256SUMS.txt --clobber
           if [[ -f "release-notes/v$version.md" ]]; then
-            gh release edit "v$version" --notes-file "release-notes/v$version.md"
+            release_id="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/v$version" --jq ".id")"
+            jq -Rs "{body: .}" "release-notes/v$version.md" |
+              gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$release_id" --input - > /dev/null
           fi
